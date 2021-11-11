@@ -1,0 +1,35 @@
+{
+    "name": "attla/sso-client",
+    "description": "SSO authentication client",
+    "keywords": [
+        "attla",
+        "sso",
+        "same-sign-on",
+        "authentication"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Lucas Nicolau",
+            "email": "lucas@octha.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Attla\\SSO\\": "src/",
+            "Attla\\SSO\\Database\\Seeds\\": "database/seeds/"
+        }
+    },
+    "extra": {
+        "attla": {
+            "providers": [
+                "Attla\\SSO\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
