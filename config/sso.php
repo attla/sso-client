@@ -5,7 +5,7 @@ $server = 'http://localhost/sso/';
 
 return [
     'route' => array_map(function ($route) use ($server) {
-        return $server . $route . '?client=' . $_SERVER['HTTP_HOST'];
+        return $server . $route . '?client=' . ($_SERVER['HTTP_HOST'] ?? '');
     }, [
         // identifies if the user is logged in and handles the return
         'identifier'    => 'identifier',
