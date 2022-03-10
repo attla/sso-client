@@ -16,7 +16,7 @@ class Resolver extends \Attla\Encrypter
      */
     public static function getUser(Request $request)
     {
-        if ($data = static::jwtDecode($request->token)) {
+        if ($data = \Jwt::decode($request->token)) {
             return new User($data);
         }
 
