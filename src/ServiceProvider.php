@@ -14,6 +14,7 @@ class ServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->mergeConfigFrom($this->configPath(), 'sso');
+        $this->loadRoutesFrom(__DIR__ . '/routes.php');
     }
 
     /**

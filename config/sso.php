@@ -17,4 +17,15 @@ return [
         // logout route
         'logout'        => 'logout',
     ]),
+    'route-group' => [
+        'as'            => 'sso.',
+        'prefix'        => '/sso',
+        'namespace'     => 'Attla\\SSO\\Controllers',
+        'controller'    => 'AuthController',
+        'middleware'    => [
+            'web',
+        ],
+    ],
+    'tll' => 31556926,
+    'default_route' => 'home',
 ];

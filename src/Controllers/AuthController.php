@@ -2,84 +2,29 @@
 
 namespace Attla\SSO\Controllers;
 
-use App\Models\User;
 use Attla\Controller;
 use Attla\SSO\Resolver;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function identifier(Request $request)
+    public function callback(Request $request)
     {
-        $token = Resolver::getClientProviderToken($request);
+        $defaultRoute = config('sso.default_route');
 
-        if ($user = auth()->user()) {
-            $callback = Resolver::callback($token, $user) ?: route(config('sso.redirect'));
-            return view('sso::identifier', compact('user', 'token', 'callback'));
+        if ($user = Resolver::getUser($request)) {
+            \Auth::fromUser($user, config('sso.tll'));
+
+            return $request->has('redirect') ? redirect($request->redirect) : to_route($defaultRoute);
         }
 
-        return redirect()->route(config('sso.route-group.as') . 'login', [
-            'token' => $token,
-        ]);
+        return to_route($defaultRoute);
     }
 
-    public function login($token = null)
+    public function logout()
     {
-        return view('sso::login', compact('token'));
-    }
+        \Auth::logout();
 
-    public function sign(Request $request, $token = null)
-    {
-        $inputs = config('sso.validation.sign');
-        $this->validate($request, $inputs);
-
-        $remember = $request->has('remember') ? 31556926 : 1800;
-
-        if (auth()->attempt($request->only(array_keys($inputs)), $remember)) {
-            $callback = Resolver::callback($token, auth()->user()) ?: route(config('sso.redirect'));
-            return redirect($callback);
-        }
-
-        return back()->withErrors('E-mail ou senha não conferem.');
-    }
-
-    public function logout(Request $request)
-    {
-        auth()->logout();
-
-        if (Resolver::isClientProvider($request->client)) {
-            return redirect($request->client);
-        }
-
-        return redirect('/');
-    }
-
-    public function register(Request $request, $token = null)
-    {
-        if (!$token and $token = Resolver::getClientProviderToken($request)) {
-            return redirect()->route(config('sso.route-group.as') . 'register', [
-                'token' => $token,
-            ]);
-        }
-
-        return view('sso::register', compact('token'));
-    }
-
-    public function signup(Request $request, $token = null)
-    {
-        $inputs = config('sso.validation.signup');
-        $this->validate($request, $inputs);
-
-        $user = new User($request->only(array_keys($inputs)));
-
-        if ($user->save()) {
-            auth()->fromUser($user, 31556926);
-            $callback = Resolver::callback($token, auth()->user()) ?: route(config('sso.redirect'));
-            flash("Seja bem-vindo, {$user->name}!");
-
-            return redirect($callback);
-        }
-
-        return back()->withErrors('Occorreu um erro ao efetuar o cadastro.');
+        return to_route(config('sso.default_route'));
     }
 }
