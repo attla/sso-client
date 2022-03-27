@@ -1,6 +1,8 @@
 <?php
 
-app('router')->group(app('config')->get('sso.route-group', [
+$config = config();
+
+app('router')->group($config->get('sso.route-group', [
     'as'            => 'sso.',
     'prefix'        => '/sso',
     'namespace'     => 'Attla\\SSO\\Controllers',
@@ -8,7 +10,7 @@ app('router')->group(app('config')->get('sso.route-group', [
     'middleware'    => [
         'web',
     ],
-]), function ($router) {
+]), function ($router) use ($config) {
     foreach (
         [
             'callback',
@@ -19,5 +21,13 @@ app('router')->group(app('config')->get('sso.route-group', [
             'uses' => $action,
             'as' => $action,
         ]);
+    }
+
+    $groupAs = $config->get('sso.route-group.as', 'sso.');
+
+    foreach (config('sso.route', []) as $route => $uri) {
+        if (!$router->has($groupAs . $route)) {
+            $router->name($route)->get('/' . $route, fn() => redirect($uri));
+        }
     }
 });
