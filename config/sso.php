@@ -26,6 +26,14 @@ return [
             'web',
         ],
     ],
+    'route-alias' => [
+        'identifier'    => [
+            // 'alias-uri',
+        ],
+        'login'         => [],
+        'register'      => [],
+        'logout'        => [],
+    ],
     'tll' => 31556926,
     'default_route' => 'home',
 ];

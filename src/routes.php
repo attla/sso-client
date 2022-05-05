@@ -1,8 +1,12 @@
 <?php
 
-$config = config();
+use Illuminate\Support\Str;
 
-app('router')->group($config->get('sso.route-group', [
+$config = config();
+$router = app('router');
+$groupAs = $config->get('sso.route-group.as', 'sso.');
+
+$router->group($config->get('sso.route-group', [
     'as'            => 'sso.',
     'prefix'        => '/sso',
     'namespace'     => 'Attla\\SSO\\Controllers',
@@ -10,7 +14,7 @@ app('router')->group($config->get('sso.route-group', [
     'middleware'    => [
         'web',
     ],
-]), function ($router) use ($config) {
+]), function ($router) use ($config, $groupAs) {
     foreach (
         [
             'callback',
@@ -23,11 +27,26 @@ app('router')->group($config->get('sso.route-group', [
         ]);
     }
 
-    $groupAs = $config->get('sso.route-group.as', 'sso.');
-
-    foreach (config('sso.route', []) as $route => $uri) {
+    foreach ($config->get('sso.route', []) as $route => $uri) {
         if (!$router->has($groupAs . $route)) {
             $router->name($route)->get('/' . $route, fn() => redirect($uri));
         }
     }
 });
+
+collect($config->get('sso.route-alias', []))
+    ->filter()
+    ->map(function ($aliases, $route) use ($router, $groupAs) {
+        $aliases = is_array($aliases) ? $aliases : [$aliases];
+
+        foreach (
+            collect($aliases)->map(function ($alias) {
+                return is_string($alias) ? trim($alias, '/') : '';
+            })->filter()
+            ->all() as $uri
+        ) {
+            if ($router->has($groupAs . $route)) {
+                $router->name(Str::slug($uri))->get('/' . $uri, fn() => redirect(route($groupAs . $route)));
+            }
+        }
+    });
