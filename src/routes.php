@@ -5,6 +5,8 @@ use Illuminate\Support\Str;
 $config = config();
 $router = app('router');
 $groupAs = $config->get('sso.route-group.as', 'sso.');
+$redirect = $config->get('sso.only_guest', false) && !\Auth::guest()
+    ? $config->get('sso.redirect', '/') : '';
 
 $router->group($config->get('sso.route-group', [
     'as'            => 'sso.',
@@ -14,7 +16,7 @@ $router->group($config->get('sso.route-group', [
     'middleware'    => [
         'web',
     ],
-]), function ($router) use ($config, $groupAs) {
+]), function ($router) use ($config, $groupAs, $redirect) {
     foreach (
         [
             'callback',
@@ -29,15 +31,16 @@ $router->group($config->get('sso.route-group', [
 
     foreach ($config->get('sso.route', []) as $route => $uri) {
         if (!$router->has($groupAs . $route)) {
-            $router->name($route)->get('/' . $route, fn() => redirect($uri));
+            $router->name($route)->get('/' . $route, fn() => redirect($redirect ? $redirect : $uri));
         }
     }
 });
 
 collect($config->get('sso.route-alias', []))
     ->filter()
-    ->map(function ($aliases, $route) use ($router, $groupAs) {
+    ->map(function ($aliases, $route) use ($router, $groupAs, $redirect) {
         $aliases = is_array($aliases) ? $aliases : [$aliases];
+        $route = $groupAs . $route;
 
         foreach (
             collect($aliases)->map(function ($alias) {
@@ -45,8 +48,11 @@ collect($config->get('sso.route-alias', []))
             })->filter()
             ->all() as $uri
         ) {
-            if ($router->has($groupAs . $route)) {
-                $router->name(Str::slug($uri))->get('/' . $uri, fn() => redirect(route($groupAs . $route)));
+            if (
+                $router->has($route)
+                && !$router->has($uri = Str::slug($uri))
+            ) {
+                $router->name($uri)->get('/' . $uri, fn() => redirect($redirect ? $redirect : route($route)));
             }
         }
     });

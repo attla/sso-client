@@ -2,7 +2,13 @@
 
 // sso server uri
 $server = 'http://localhost/sso/';
+// endpoint uri or route name to be redirected after sso authentication
 $redirect = 'http://localhost/';
+
+
+
+$redirect = route()->has($route = trim($redirect, '/.'))
+    ? route($route) : $redirect;
 
 return [
     'route' => array_map(function ($route) use ($server, $redirect) {
@@ -36,4 +42,6 @@ return [
     ],
     'tll' => 31556926,
     'default_route' => 'home',
+    'only_guest' => false,
+    'redirect' => $redirect,
 ];
