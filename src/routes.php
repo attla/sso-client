@@ -40,7 +40,7 @@ collect($config->get('sso.route-alias', []))
     ->filter()
     ->map(function ($aliases, $route) use ($router, $groupAs, $redirect) {
         $aliases = is_array($aliases) ? $aliases : [$aliases];
-        $route = $groupAs . $route;
+        $routeName = $groupAs . $route;
 
         foreach (
             collect($aliases)->map(function ($alias) {
@@ -49,10 +49,14 @@ collect($config->get('sso.route-alias', []))
             ->all() as $uri
         ) {
             if (
-                $router->has($route)
+                $router->has($routeName)
                 && !$router->has($uri = Str::slug($uri))
             ) {
-                $router->name($uri)->get('/' . $uri, fn() => redirect($redirect ? $redirect : route($route)));
+                $router->name($uri)->get('/' . $uri, fn() => redirect(
+                    $redirect && !in_array($route, ['callback', 'logout'])
+                        ? $redirect
+                        : route($routeName)
+                ));
             }
         }
     });
