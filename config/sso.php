@@ -1,19 +1,11 @@
 <?php
 
-// sso server uri
-$server = 'http://localhost/sso/';
-// endpoint uri or route name to be redirected after sso authentication
-$redirect = 'http://localhost/';
-
-
-
-$redirect = route()->has($route = trim($redirect, '/.'))
-    ? route($route) : $redirect;
-
 return [
-    'route' => array_map(function ($route) use ($server, $redirect) {
-        return $server . $route . '?client=' . ($_SERVER['HTTP_HOST'] ?? '') . '&r=' . $redirect;
-    }, [
+    // sso server uri
+    'server' => 'http://127.0.0.1/sso',
+    // endpoint uri or route name to be redirected after sso authentication
+    'redirect' => 'http://127.0.0.1',
+    'route' => [
         // identifies if the user is logged in and handles the return
         'identifier'    => 'identifier',
         // login page
@@ -22,7 +14,7 @@ return [
         'register'      => 'register',
         // logout route
         'logout'        => 'logout',
-    ]),
+    ],
     'route-group' => [
         'as'            => 'sso.',
         'prefix'        => '/sso',
@@ -40,8 +32,7 @@ return [
         'register'      => [],
         'logout'        => [],
     ],
-    'tll' => 31556926,
+    'tll' => 525600,
     'default_route' => 'home',
     'only_guest' => false,
-    'redirect' => $redirect,
 ];

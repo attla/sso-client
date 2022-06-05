@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Support\Str;
+use Attla\SSO\Resolver;
+use Illuminate\Http\Request;
 
 $config = config();
 $router = app('router');
 $groupAs = $config->get('sso.route-group.as', 'sso.');
 $redirect = $config->get('sso.only_guest', false) && !\Auth::guest()
-    ? $config->get('sso.redirect', '/') : '';
+    ? Resolver::redirect()
+    : '';
 
 $router->group($config->get('sso.route-group', [
     'as'            => 'sso.',
@@ -30,8 +33,14 @@ $router->group($config->get('sso.route-group', [
     }
 
     foreach ($config->get('sso.route', []) as $route => $uri) {
+        $route = trim(trim($route), '/');
+
         if (!$router->has($groupAs . $route)) {
-            $router->name($route)->get('/' . $route, fn() => redirect($redirect ? $redirect : $uri));
+            $router->name($route)->get('/' . $route, fn(Request $request) => redirect(
+                $redirect ?
+                    $redirect
+                    : Resolver::link($uri, $request->redirect ?: $request->r ?: '')
+            ));
         }
     }
 });
@@ -44,7 +53,9 @@ collect($config->get('sso.route-alias', []))
 
         foreach (
             collect($aliases)->map(function ($alias) {
-                return is_string($alias) ? trim($alias, '/') : '';
+                return is_string($alias)
+                    ? trim(trim($alias), '/')
+                    : '';
             })->filter()
             ->all() as $uri
         ) {
@@ -52,10 +63,12 @@ collect($config->get('sso.route-alias', []))
                 $router->has($routeName)
                 && !$router->has($uri = Str::slug($uri))
             ) {
-                $router->name($uri)->get('/' . $uri, fn() => redirect(
-                    $redirect && !in_array($route, ['callback', 'logout'])
+                $router->name($uri)->get('/' . $uri, fn(Request $request) => redirect(
+                    !in_array($route, ['callback', 'logout']) && $redirect
                         ? $redirect
-                        : route($routeName)
+                        : route($routeName, [
+                            'redirect' => $request->redirect ?: $request->r ?: '',
+                        ])
                 ));
             }
         }

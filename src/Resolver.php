@@ -6,8 +6,36 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Auth\Authenticatable;
 
-class Resolver extends \Attla\Encrypter
+class Resolver
 {
+    /**
+     * Transform endpoint to SSO server url.
+     *
+     * @param string $endpoint
+     * @return string
+     */
+    public static function link(string $endpoint = '', $redirect = ''): string
+    {
+        $server = trim(config('sso.server', 'http://127.0.0.1'), '/') . '/';
+
+        return $server . trim(trim($endpoint), '/')
+            . '?client=' . urlencode($_SERVER['HTTP_HOST'] ?? '')
+            . '&r=' . urlencode(trim(trim((string) $redirect), '/') ?: static::redirect());
+    }
+
+    /**
+     * Get SSO end redirect uri
+     *
+     * @return string
+     */
+    public static function redirect()
+    {
+        $redirect = config('sso.redirect', '/');
+        return route()->has($route = trim(trim($redirect), '/.-'))
+            ? route($route)
+            : $redirect;
+    }
+
     /**
      * Get user from sso callback
      *
@@ -26,11 +54,13 @@ class Resolver extends \Attla\Encrypter
     /**
      * Make a sso logout
      *
-     * @param Request $request
-     * @return void
+     * @return \Illuminate\Http\RedirectResponse
      */
     public static function logout(Request $request)
     {
-        return redirect(config('sso.route.logout') . '?client=' . $request->root());
+        return redirect(static::link(
+            config('sso.route.logout', 'logout'),
+            $request->redirect ?: $request->r ?: ''
+        ));
     }
 }
