@@ -1,13 +1,14 @@
 <?php
 
-use Illuminate\Support\Str;
 use Attla\SSO\Resolver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 $config = config();
 $router = app('router');
 $groupAs = $config->get('sso.route-group.as', 'sso.');
-$redirect = $config->get('sso.only_guest', false) && !\Auth::guest()
+$redirect = $config->get('sso.only_guest', false) && !Auth::guest()
     ? Resolver::redirect()
     : '';
 
