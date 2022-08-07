@@ -2,7 +2,7 @@
 
 namespace Attla\SSO\Controllers;
 
-use Attla\Controller;
+use App\Http\Controllers\Controller;
 use Attla\SSO\Resolver;
 use Illuminate\Http\Request;
 
