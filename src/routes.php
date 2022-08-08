@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 $config = config();
 $router = app('router');
 $groupAs = $config->get('sso.route-group.as', 'sso.');
-$redirect = $config->get('sso.only_guest', false) && !Auth::guest()
+$redirect = fn () => $config->get('sso.only_guest', false) && !Auth::guest()
     ? Resolver::redirect()
     : '';
 
@@ -38,8 +38,8 @@ $router->group($config->get('sso.route-group', [
 
         if (!$router->has($groupAs . $route)) {
             $router->name($route)->get('/' . $route, fn(Request $request) => redirect(
-                $redirect ?
-                    $redirect
+                $redirect() ?
+                    $redirect()
                     : Resolver::link($uri, $request->redirect ?: $request->r ?: '')
             ));
         }
@@ -65,8 +65,8 @@ collect($config->get('sso.route-alias', []))
                 && !$router->has($uri = Str::slug($uri))
             ) {
                 $router->name($uri)->get('/' . $uri, fn(Request $request) => redirect(
-                    !in_array($route, ['callback', 'logout']) && $redirect
-                        ? $redirect
+                    !in_array($route, ['callback', 'logout']) && $redirect()
+                        ? $redirect()
                         : route($routeName, [
                             'redirect' => $request->redirect ?: $request->r ?: '',
                         ])
