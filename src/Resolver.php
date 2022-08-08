@@ -5,6 +5,7 @@ namespace Attla\SSO;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Route;
 
 class Resolver
 {
@@ -31,7 +32,7 @@ class Resolver
     public static function redirect()
     {
         $redirect = config('sso.redirect', '/');
-        return route()->has($route = trim(trim($redirect), '/.-'))
+        return Route::has($route = trim(trim($redirect), '/.-'))
             ? route($route)
             : $redirect;
     }
