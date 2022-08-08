@@ -10,14 +10,21 @@ use Illuminate\Support\Facades\Route;
 class Resolver
 {
     /**
-     * Transform endpoint to SSO server url.
+     * Store the config instance
+     *
+     * @var \Illuminate\Config\Repository
+     */
+    protected static $config;
+
+    /**
+     * Transform endpoint to SSO server url
      *
      * @param string $endpoint
      * @return string
      */
     public static function link(string $endpoint = '', $redirect = ''): string
     {
-        $server = trim(config('sso.server', 'http://127.0.0.1'), '/') . '/';
+        $server = trim(static::getConfig('sso.server', 'http://127.0.0.1'), '/') . '/';
 
         return $server . trim(trim($endpoint), '/')
             . '?client=' . urlencode($_SERVER['HTTP_HOST'] ?? '')
@@ -31,7 +38,7 @@ class Resolver
      */
     public static function redirect()
     {
-        $redirect = config('sso.redirect', '/');
+        $redirect = static::getConfig('sso.redirect', '/');
         return Route::has($route = trim(trim($redirect), '/.-'))
             ? route($route)
             : $redirect;
@@ -60,8 +67,24 @@ class Resolver
     public static function logout(Request $request)
     {
         return redirect(static::link(
-            config('sso.route.logout', 'logout'),
+            static::getConfig('route.logout', 'logout'),
             $request->redirect ?: $request->r ?: ''
         ));
+    }
+
+    /**
+     * Retrieve SSO config
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    protected static function getConfig($key = null, $default = null)
+    {
+        if (is_null(static::$config)) {
+            static::$config = config();
+        }
+
+        return static::$config->get('sso.' . $key, $default);
     }
 }
