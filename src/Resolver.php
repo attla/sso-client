@@ -38,7 +38,7 @@ class Resolver
      */
     public static function redirect()
     {
-        $redirect = static::getConfig('sso.redirect', '/');
+        $redirect = (string) static::getConfig('sso.redirect', '/');
         return Route::has($route = trim(trim($redirect), '/.-'))
             ? route($route)
             : $redirect;
