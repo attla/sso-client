@@ -2,9 +2,9 @@
 
 namespace Attla\SSO;
 
-use App\Models\User;
+use Attla\DataToken\Facade as DataToken;
 use Illuminate\Http\Request;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 class Resolver
@@ -47,13 +47,25 @@ class Resolver
     /**
      * Get user from sso callback
      *
-     * @param Request $request
-     * @return Authenticatable|false
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\Auth\Authenticatable|false
      */
     public static function getUser(Request $request)
     {
-        if ($data = \Jwt::decode($request->token)) {
-            return new User($data);
+        if (
+            static::getConfig('auth.guards.' . static::getConfig(
+                'auth.defaults.guard',
+                $guard = 'authentic'
+            )) != $guard
+        ) {
+            throw new \InvalidArgumentException(
+                'Authentication guard is not accepted. '
+                . 'The SSO client only accepts "authentic" auth guard.'
+            );
+        }
+
+        if (is_object($data = DataToken::decode($request->token))) {
+            return Auth::createModel($data);
         }
 
         return false;
@@ -67,13 +79,13 @@ class Resolver
     public static function logout(Request $request)
     {
         return redirect(static::link(
-            static::getConfig('route.logout', 'logout'),
+            static::getConfig('sso.route.logout', 'logout'),
             $request->redirect ?: $request->r ?: ''
         ));
     }
 
     /**
-     * Retrieve SSO config
+     * Retrieve config value
      *
      * @param string $key
      * @param mixed $default
@@ -85,6 +97,6 @@ class Resolver
             static::$config = config();
         }
 
-        return static::$config->get('sso.' . $key, $default);
+        return static::$config->get($key, $default);
     }
 }
