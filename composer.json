@@ -16,6 +16,7 @@
     ],
     "require": {
         "php": ">=7.2.5",
+        "attla/authentic": "dev-main",
         "haydenpierce/class-finder": "^0.4.3"
     },
     "autoload": {
