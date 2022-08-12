@@ -56,7 +56,7 @@ class Resolver
             static::getConfig('auth.guards.' . static::getConfig(
                 'auth.defaults.guard',
                 $guard = 'authentic'
-            )) != $guard
+            ) . '.driver') != $guard
         ) {
             throw new \InvalidArgumentException(
                 'Authentication guard is not accepted. '
