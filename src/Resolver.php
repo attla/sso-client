@@ -28,7 +28,7 @@ class Resolver
 
         return $server . trim(trim($endpoint), '/')
             . '?client=' . urlencode($_SERVER['HTTP_HOST'] ?? '')
-            . '&r=' . urlencode(trim(trim((string) $redirect), '/') ?: static::redirect());
+            . '&r=' . urlencode(static::redirect($redirect));
     }
 
     /**
@@ -36,9 +36,11 @@ class Resolver
      *
      * @return string
      */
-    public static function redirect()
+    public static function redirect($redirect = null)
     {
-        $redirect = (string) static::getConfig('sso.redirect', '/');
+        $redirect = trim(trim((string) $redirect), '/');
+        !$redirect && $redirect = (string) static::getConfig('sso.redirect', '/');
+
         return Route::has($route = trim(trim($redirect), '/.-'))
             ? route($route)
             : $redirect;
