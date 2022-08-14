@@ -4,8 +4,10 @@ namespace Attla\SSO;
 
 use Attla\DataToken\Facade as DataToken;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{
+    Auth,
+    Route
+};
 
 class Resolver
 {
@@ -20,6 +22,7 @@ class Resolver
      * Transform endpoint to SSO server url
      *
      * @param string $endpoint
+     * @param string $redirect
      * @return string
      */
     public static function link(string $endpoint = '', $redirect = ''): string
@@ -44,6 +47,18 @@ class Resolver
         return Route::has($route = trim(trim($redirect), '/.-'))
             ? route($route)
             : $redirect;
+    }
+
+    /**
+     * Detect redirect from request
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $default
+     * @return string
+     */
+    public static function getRedirectFromRequest(Request $request, $default = null)
+    {
+        return $request->redirect_uri ?: $request->redirect ?: $request->r ?: static::redirect($default);
     }
 
     /**
@@ -76,6 +91,7 @@ class Resolver
     /**
      * Make a sso logout
      *
+     * @return \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public static function logout(Request $request)

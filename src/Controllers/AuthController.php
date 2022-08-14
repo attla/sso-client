@@ -17,7 +17,7 @@ class AuthController extends Controller
         if ($user = Resolver::getUser($request)) {
             Auth::login($user, $config->get('sso.tll'));
 
-            return redirect(Resolver::redirect($request->redirect ?: $request->r ?: $defaultRoute));
+            return redirect(Resolver::getRedirectFromRequest($request, $defaultRoute));
         }
 
         return to_route($defaultRoute);
