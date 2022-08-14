@@ -12,21 +12,21 @@ class AuthController extends Controller
     public function callback(Request $request)
     {
         $config = config();
-        $defaultRoute = $config->get('sso.default_route');
+        $defaultRedirect = Resolver::redirect($config->get('sso.default_redirect'));
 
         if ($user = Resolver::getUser($request)) {
-            Auth::login($user, $config->get('sso.tll'));
+            Auth::login($user, $config->get('sso.remember'));
 
-            return redirect(Resolver::getRedirectFromRequest($request, $defaultRoute));
+            return redirect(Resolver::getRedirectFromRequest($request, $defaultRedirect));
         }
 
-        return to_route($defaultRoute);
+        return redirect($defaultRedirect);
     }
 
     public function logout()
     {
         Auth::logout();
 
-        return to_route(config('sso.default_route'));
+        return redirect(Resolver::redirect(config('sso.default_redirect')));
     }
 }

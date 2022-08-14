@@ -58,7 +58,10 @@ class Resolver
      */
     public static function getRedirectFromRequest(Request $request, $default = null)
     {
-        return $request->redirect_uri ?: $request->redirect ?: $request->r ?: static::redirect($default);
+        return $request->redirect_uri
+            ?: $request->redirect
+            ?: $request->r
+            ?: static::redirect($default);
     }
 
     /**
@@ -109,7 +112,7 @@ class Resolver
      * @param mixed $default
      * @return mixed
      */
-    protected static function getConfig($key = null, $default = null)
+    public static function getConfig($key = null, $default = null)
     {
         if (is_null(static::$config)) {
             static::$config = config();
