@@ -37,6 +37,7 @@ class Resolver
     /**
      * Get SSO end redirect uri
      *
+     * @param string $redirect
      * @return string
      */
     public static function redirect($redirect = null)
