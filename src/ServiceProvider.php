@@ -103,7 +103,7 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Get config path
+     * Load routes aliases
      *
      * @return void
      */
