@@ -66,6 +66,18 @@ class Resolver
     }
 
     /**
+     * Detect state from request
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return string|null
+     */
+    public static function getStateFromRequest(Request $request)
+    {
+        return $request->state
+            ?: $request->token;
+    }
+
+    /**
      * Get user from sso callback
      *
      * @param \Illuminate\Http\Request $request
@@ -85,7 +97,7 @@ class Resolver
             );
         }
 
-        if (is_object($data = DataToken::decode($request->token))) {
+        if (is_object($data = DataToken::decode(static::getStateFromRequest($request)))) {
             return Auth::createModel($data);
         }
 
@@ -102,7 +114,7 @@ class Resolver
     {
         return redirect(static::link(
             static::getConfig('sso.route.logout', 'logout'),
-            $request->redirect ?: $request->r ?: ''
+            static::getRedirectFromRequest($request)
         ));
     }
 
