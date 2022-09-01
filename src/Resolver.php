@@ -59,10 +59,11 @@ class Resolver
      */
     public static function getRedirectFromRequest(Request $request, $default = null)
     {
-        return $request->redirect_uri
-            ?: $request->redirect_url
-            ?: $request->redirect
+        return $request->redirect
             ?: $request->r
+            ?: $request->redirect_to
+            ?: $request->redirect_uri
+            ?: $request->redirect_url
             ?: $request->uri
             ?: $request->url
             ?: static::redirect($default);
